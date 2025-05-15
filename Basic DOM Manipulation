@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <ul id="items">
+        <li>orange</li>
+        <li>apple</li>
+        <li>fruit</li>
+    </ul>
+    <input onclick="addItem()" type="button" value="Add Item">
+</body>
+</html>
+<script>
+    function addItem(){
+        const additem=document.createElement('li')
+        additem.textContent="New Item"
+        let count=document.getElementById('items').childElementCount
+
+        if(count%2==0){
+            additem.style.color="red"
+            additem.style.fontWeight="bold"
+            document.getElementById('items').appendChild(additem);
+            i+=1
+        }
+        else{
+            additem.style.color="blue"
+            additem.style.fontStyle="italic"
+            document.getElementById('items').appendChild(additem);
+            i+=1
+        }
+    }
+</script>
