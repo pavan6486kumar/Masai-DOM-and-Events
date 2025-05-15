@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <h1 id="head">Hello World!</h1>
+    <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Provident voluptas modi mollitia tenetur architecto, atque totam molestias error non voluptatum placeat excepturi nisi necessitatibus adipisci doloremque consequuntur natus itaque obcaecati.</p>
+    <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Corrupti hic facere cupiditate corporis eligendi incidunt labore cumque distinctio blanditiis praesentium deserunt in libero, expedita quis officia id quas quos fugiat!</p>
+    <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Cupiditate, error consequatur exercitationem nulla qui quasi ducimus ratione iusto ipsum fuga maiores optio sunt impedit, accusantium nesciunt quam, fugit atque vel!</p>
+    <div class="container">
+        King of The Jungle
+    </div>
+</body>
+</html>
+<script>
+    console.log(document.getElementById("head").textContent="Welcome to the DOM World!")
+    ptag=document.getElementsByTagName('p')
+    for(let i=0;i<ptag.length;i++){
+        ptag[i].style.color="blue"
+    }
+    console.log(document.querySelector('.container').style.backgroundColor="yellow")
+</script>
