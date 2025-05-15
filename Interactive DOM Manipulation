@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <div id="cc">
+        <label for="col">Enter Color :</label>
+        <input id="col" type="text" placeholder="enter color">
+    </div>
+    <div id="ct">
+        <label for="txt">Enter text :</label>
+        <input id="txt" type="text" placeholder="enter text">
+    </div>
+    <button onclick="changeColor()" id="btn1">Change Color</button><br>
+    <button onclick="changeText()" id="btn2">Change text</button>
+    <div id="content">This is This</div>
+</body>
+</html>
+<script>
+    function isValidColor(color) {
+        const s = new Option().style;
+        s.color = color;
+        return s.color !== '';
+    }
+    function changeColor(){
+        let color=document.getElementById('col').value
+        if(isValidColor(color)){
+            document.getElementById('content').style.color=color
+        }
+        else{
+            alert("Invalid color name!")
+        }
+    }
+
+    function changeText(){
+        let text=document.getElementById('txt').value
+        if(text!=""){
+            document.getElementById('content').textContent=text
+        }
+        else{
+            alert("Please enter some text!")
+        }
+    }
+</script>
