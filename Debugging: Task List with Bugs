@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Task List</title>
 </head>
 <body>
   <input id="taskInput" type="text" placeholder="Enter task">
@@ -16,15 +16,18 @@
     const taskList = document.getElementById('taskList');
 
     addTaskButton.onclick = function () {
-      const taskText = taskInput.value;
-      const newTask = document.createElement('li');
-      newTask.innerHTML = taskText;
-      taskList.append(newTask); // Issue 1: Incorrect method
+      const taskText = taskInput.value.trim();
+      if (taskText !== "") {
+        const newTask = document.createElement('li');
+        newTask.textContent = taskText; 
+        taskList.appendChild(newTask); 
+        taskInput.value = "";
+      }
     };
 
     taskList.onclick = function (e) {
-      if (e.tagName === 'LI') {
-        e.target.remove(); // Issue 2: Incorrect condition
+      if (e.target.tagName === 'LI') { 
+        e.target.remove();
       }
     };
   </script>
