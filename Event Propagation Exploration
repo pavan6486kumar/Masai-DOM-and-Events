@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Event Propagation Demo</title>
+  <style>
+    .outer, .middle, .inner {
+      padding: 30px;
+      margin: 10px;
+      border: 2px solid black;
+    }
+    .outer { background-color: #ffdddd; }
+    .middle { background-color: #ddffdd; }
+    .inner { background-color: #ddddff; }
+  </style>
+</head>
+<body>
+
+  <div class="outer" id="outer">
+    Outer Div
+    <button id="outerBtn">Outer Button</button>
+
+    <div class="middle" id="middle">
+      Middle Div
+      <button id="middleBtn">Middle Button</button>
+
+      <div class="inner" id="inner">
+        Inner Div
+        <button id="innerBtn">Inner Button</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function logEvent(phase, name) {
+      alert(`${phase} phase: ${name} clicked`);
+    }
+
+    // Utility to attach both capturing and bubbling listeners
+    function attachListeners(element, name) {
+      // Capturing phase
+      element.addEventListener("click", (e) => {
+        logEvent("Capturing", name);
+      }, true);
+
+      // Bubbling phase
+      element.addEventListener("click", (e) => {
+        logEvent("Bubbling", name);
+      });
+    }
+
+    // Attach to divs
+    attachListeners(document.getElementById("outer"), "Outer Div");
+    attachListeners(document.getElementById("middle"), "Middle Div");
+    attachListeners(document.getElementById("inner"), "Inner Div");
+
+    // Attach to buttons
+    attachListeners(document.getElementById("outerBtn"), "Outer Button");
+    attachListeners(document.getElementById("middleBtn"), "Middle Button");
+
+    // Special case: inner button stops propagation
+    const innerBtn = document.getElementById("innerBtn");
+
+    // Capturing
+    innerBtn.addEventListener("click", (e) => {
+      logEvent("Capturing", "Inner Button");
+    }, true);
+
+    // Bubbling (stopping here)
+    innerBtn.addEventListener("click", (e) => {
+      logEvent("Bubbling", "Inner Button");
+      e.stopPropagation(); // Stops the event from reaching parent elements
+    });
+  </script>
+</body>
+</html>
