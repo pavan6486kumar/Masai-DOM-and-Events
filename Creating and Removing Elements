@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<style>
+    #container{
+        height: fit-content;
+        width: 300px;
+        background: linear-gradient(to right,rgb(96, 96, 222),rgb(127, 239, 127), orange);
+        border-radius: 0.5em;
+        padding: 10px;
+    }
+</style>
+<body>
+    <div id="container"></div>
+    <button onclick="addPara()">Add Paragraph</button><br>
+    <button onclick="removePara()">Remove Last Paragraph</button>
+</body>
+</html>
+<script>
+    const story=document.getElementById('container')
+    function addPara(){
+        const para=document.createElement('p')
+        para.textContent="This is a new paragraph."
+        story.appendChild(para);
+    }
+
+    function removePara(){
+        if(story.lastElementChild){
+            story.removeChild(story.lastElementChild)
+        }
+        else{
+            alert("No paras in this story!")
+        }
+    }
+</script>
