@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Register</title>
+</head>
+<body>
+  <h2>Register</h2>
+  <form id="registerForm">
+    <input type="email" id="email" placeholder="Email" required><br>
+    <input type="password" id="password" placeholder="Password" required><br>
+    <select id="role" required>
+      <option value="">Select Role</option>
+      <option value="Admin">Admin</option>
+      <option value="User">User</option>
+    </select><br>
+    <button type="submit">Register</button>
+  </form>
+
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js"></script>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_PROJECT.firebaseapp.com",
+      databaseURL: "https://YOUR_PROJECT.firebaseio.com",
+      projectId: "YOUR_PROJECT_ID",
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.database();
+
+    document.getElementById("registerForm").addEventListener("submit", function (e) {
+      e.preventDefault();
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+      const role = document.getElementById("role").value;
+
+      auth.createUserWithEmailAndPassword(email, password)
+        .then(cred => {
+          return db.ref("users/" + cred.user.uid).set({ email, role });
+        })
+        .then(() => {
+          alert("Registration successful. Please log in.");
+          window.location.href = "login.html";
+        })
+        .catch(err => alert(err.message));
+    });
+  </script>
+</body>
+</html>
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Login</title>
+</head>
+<body>
+  <h2>Login</h2>
+  <form id="loginForm">
+    <input type="email" id="email" placeholder="Email" required><br>
+    <input type="password" id="password" placeholder="Password" required><br>
+    <button type="submit">Login</button>
+  </form>
+
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js"></script>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_PROJECT.firebaseapp.com",
+      databaseURL: "https://YOUR_PROJECT.firebaseio.com",
+      projectId: "YOUR_PROJECT_ID",
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.database();
+
+    document.getElementById("loginForm").addEventListener("submit", function (e) {
+      e.preventDefault();
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+
+      auth.signInWithEmailAndPassword(email, password)
+        .then(cred => {
+          const uid = cred.user.uid;
+          return db.ref("users/" + uid).get();
+        })
+        .then(snapshot => {
+          const userData = snapshot.val();
+          sessionStorage.setItem("role", userData.role);
+          sessionStorage.setItem("uid", snapshot.key);
+
+          if (userData.role === "Admin") {
+            window.location.href = "admin-dashboard.html";
+          } else {
+            window.location.href = "user-dashboard.html";
+          }
+        })
+        .catch(err => alert("Wrong credentials. Try again."));
+    });
+  </script>
+</body>
+</html>
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Admin Dashboard</title>
+</head>
+<body>
+  <h2>Admin Dashboard</h2>
+  <form id="addProductForm">
+    <input type="text" id="title" placeholder="Product Title" required><br>
+    <input type="text" id="price" placeholder="Price" required><br>
+    <input type="text" id="image" placeholder="Image URL" required><br>
+    <button type="submit">Add Product</button>
+  </form>
+
+  <div id="productList"></div>
+
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js"></script>
+
+  <script>
+    const role = sessionStorage.getItem("role");
+    if (role !== "Admin") window.location.href = "user-dashboard.html";
+
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_PROJECT.firebaseapp.com",
+      databaseURL: "https://YOUR_PROJECT.firebaseio.com",
+      projectId: "YOUR_PROJECT_ID",
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    const productList = document.getElementById("productList");
+
+    function renderProducts() {
+      productList.innerHTML = '';
+      db.ref("products").once("value", snapshot => {
+        snapshot.forEach(child => {
+          const id = child.key;
+          const p = child.val();
+          productList.innerHTML += `
+            <div>
+              <h3>${p.title}</h3>
+              <p>$${p.price}</p>
+              <img src="${p.image}" width="100"><br>
+              <button onclick="editProduct('${id}')">Edit</button>
+              <button onclick="deleteProduct('${id}')">Delete</button>
+            </div><hr>`;
+        });
+      });
+    }
+
+    renderProducts();
+
+    document.getElementById("addProductForm").addEventListener("submit", function (e) {
+      e.preventDefault();
+      const title = document.getElementById("title").value;
+      const price = document.getElementById("price").value;
+      const image = document.getElementById("image").value;
+
+      const newProductRef = db.ref("products").push();
+      newProductRef.set({ title, price, image }).then(renderProducts);
+    });
+
+    function deleteProduct(id) {
+      db.ref("products/" + id).remove().then(renderProducts);
+    }
+
+    function editProduct(id) {
+      const newTitle = prompt("Enter new title");
+      const newPrice = prompt("Enter new price");
+      const newImage = prompt("Enter new image URL");
+      db.ref("products/" + id).update({ title: newTitle, price: newPrice, image: newImage }).then(renderProducts);
+    }
+  </script>
+</body>
+</html>
+<!DOCTYPE html>
+<html>
+<head>
+  <title>User Dashboard</title>
+</head>
+<body>
+  <h2>User Dashboard</h2>
+  <div id="productList"></div>
+
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js"></script>
+
+  <script>
+    const role = sessionStorage.getItem("role");
+    if (role !== "User") window.location.href = "admin-dashboard.html";
+
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_PROJECT.firebaseapp.com",
+      databaseURL: "https://YOUR_PROJECT.firebaseio.com",
+      projectId: "YOUR_PROJECT_ID",
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    const productList = document.getElementById("productList");
+
+    db.ref("products").once("value", snapshot => {
+      snapshot.forEach(child => {
+        const p = child.val();
+        productList.innerHTML += `
+          <div>
+            <h3>${p.title}</h3>
+            <p>$${p.price}</p>
+            <img src="${p.image}" width="100"><br>
+          </div><hr>`;
+      });
+    });
+  </script>
+</body>
+</html>
