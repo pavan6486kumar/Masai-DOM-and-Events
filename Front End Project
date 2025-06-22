@@ -1,0 +1,881 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Travel Inspiration Platform</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(to right, rgb(177, 236, 177), rgb(111, 111, 224), rgb(243, 198, 115));
+      margin: 0;
+      padding: 0;
+    }
+
+    h1, h2 {
+      text-align: center;
+      color: #2c3e50;
+    }
+
+    .container {
+      max-width: 400px;
+      margin: 30px auto;
+      background-color: lightblue;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    input, button {
+      width: 95%;
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 5px;
+    }
+
+    button {
+      background-color: #3498db;
+      color: white;
+      border: none;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .preferences {
+      text-align: center;
+      margin: 20px auto;
+      background: #ffffff;
+      padding: 20px;
+      max-width: 1000px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.05);
+    }
+
+    .preferences label {
+      display: inline-block;
+      margin: 5px 15px;
+      font-weight: bold;
+    }
+
+    .preferences input[type="checkbox"] {
+      transform: scale(1.2);
+      margin-right: 6px;
+    }
+
+    .destinations {
+      display: grid;
+      text-align: center;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 20px;
+      padding: 20px;
+      max-width: 1200px;
+      margin: auto;
+    }
+
+    .card {
+      background: linear-gradient(135deg, #fdfbfb, #ebedee);
+      border-radius: 12px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+      transition: transform 0.2s ease-in-out;
+      cursor: pointer;
+    }
+
+    .card:hover {
+      transform: translateY(-5px);
+    }
+
+    .card img {
+      width: 100%;
+      height: 160px;
+      object-fit: cover;
+    }
+
+    .card-content {
+      padding: 15px;
+    }
+
+    .logout {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+    }
+
+    .logout button {
+      background: #e74c3c;
+      padding: 8px 15px;
+    }
+
+    p {
+      text-align: center;
+    }
+
+    #detailView {
+      padding: 20px;
+      background: #f5f5f5;
+      max-width: 800px;
+      margin: auto;
+      border-radius: 10px;
+    }
+
+    #detailView img {
+      width: 100%;
+      max-height: 300px;
+      object-fit: cover;
+      margin-bottom: 10px;
+    }
+
+    #backBtn {
+      background-color: #2ecc71;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Login Page -->
+  <div class="container" id="loginPage">
+    <h2>Login</h2>
+    <input type="email" id="loginEmail" placeholder="Email" />
+    <input type="text" id="loginMobile" placeholder="Mobile Number" />
+    <input type="password" id="loginPassword" placeholder="Password" />
+    <button onclick="login()">Login</button>
+    <p>Don't have an account? <a href="#" onclick="showSignup()">Sign up</a></p>
+  </div>
+
+  <!-- Signup Page -->
+  <div class="container hidden" id="signupPage">
+    <h2>Sign Up</h2>
+    <input type="text" id="signupUsername" placeholder="Username" />
+    <input type="email" id="signupEmail" placeholder="Email" />
+    <input type="text" id="signupMobile" placeholder="Mobile Number" />
+    <input type="password" id="signupPassword" placeholder="Password" />
+    <button onclick="signup()">Create Account</button>
+    <p>Already have an account? <a href="#" onclick="showLogin()">Login</a></p>
+  </div>
+
+  <!-- Main App -->
+  <div class="hidden" id="mainApp">
+    <div class="logout">
+      <button onclick="logout()">Logout</button>
+    </div>
+
+    <h1>Travel Inspiration Platform</h1>
+
+    <div class="preferences">
+      <label><input type="checkbox" value="adventure"> Adventure</label>
+      <label><input type="checkbox" value="culture"> Culture</label>
+      <label><input type="checkbox" value="relaxation"> Relaxation</label>
+      <label><input type="checkbox" value="history"> History</label>
+      <label><input type="checkbox" value="nature"> Nature</label>
+      <label><input type="checkbox" value="beach"> Beach</label>
+      <label><input type="checkbox" value="snow"> Snow</label>
+      <label><input type="checkbox" value="romantic"> Romantic</label>
+      <button onclick="getRecommendations()">Get Recommendations</button>
+    </div>
+
+    <div class="destinations" id="destinations"></div>
+
+    <!-- Detail View -->
+    <div class="hidden" id="detailView">
+      <h2 id="detailName"></h2>
+      <img id="detailImg" src="" alt="" />
+      <p id="detailDesc"></p>
+      <p><strong>Average Budget:</strong> $<span id="detailCost"></span></p>
+      <p><strong>Best Time to Visit:</strong> <span id="detailTime"></span></p>
+      <p><strong>Top Attractions:</strong> <span id="detailAttractions"></span></p>
+      <p><strong>Reviews:</strong> <span id="detailReviews"></span></p>
+      <button id="backBtn" onclick="backToList()">Back to Recommendations</button>
+    </div>
+  </div>
+
+  <script>
+      const destinations = [
+      {
+        name: "Athens, Greece",
+        description: "Birthplace of democracy and ancient ruins.",
+        imageUrl: "https://media.tacdn.com/media/attractions-splice-spp-674x446/0e/3d/6b/2a.jpg",
+        averageCost: 1500,
+        bestTime: "March to May, September to November",
+        attractions: "Acropolis, Parthenon, Plaka District",
+        reviews: "4.7/5 - Historic and cultural powerhouse",
+        types: ["culture", "history"]
+      },
+      {
+        name: "Beijing, China",
+        description: "Imperial palaces and modern wonders.",
+        imageUrl: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQIPsqJ5Cmq9MGAckzn1VyIYGUpEv6VuarbiQ&s",
+        averageCost: 1800,
+        bestTime: "March to May, September to October",
+        attractions: "Great Wall, Forbidden City, Temple of Heaven",
+        reviews: "4.8/5 - A mix of ancient and modern",
+        types: ["history", "culture"]
+      },
+      {
+        name: "Bruges, Belgium",
+        description: "Fairy-tale canals and medieval charm.",
+        imageUrl: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSuC4W8vZEr31oWZA2VT1GUCg70SlmwM6BT4A&s",
+        averageCost: 1600,
+        bestTime: "April to October",
+        attractions: "Market Square, Belfry, Canal Cruises",
+        reviews: "4.8/5 - Romantic and picturesque",
+        types: ["romantic", "history", "relaxation"]
+      },
+      {
+        name: "Dubrovnik, Croatia",
+        description: "Walled city on the Adriatic Sea.",
+        imageUrl: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRLMGyAcv9ktQ96SlocXIxzQkAXLWa2AlUlaw&s",
+        averageCost: 1700,
+        bestTime: "May to October",
+        attractions: "Old Town, City Walls, Lokrum Island",
+        reviews: "4.7/5 - Game of Thrones vibes and sea views",
+        types: ["culture", "beach", "adventure"]
+      },
+      {
+        name: "Tallinn, Estonia",
+        description: "Digital nation with medieval charm.",
+        imageUrl: "https://www.toptravelsights.com/wp-content/uploads/2020/07/Tallinn-header-1.jpg",
+        averageCost: 1300,
+        bestTime: "May to August",
+        attractions: "Old Town, Toompea Castle, Kadriorg Palace",
+        reviews: "4.6/5 - Quiet, modern, and historic",
+        types: ["culture", "history"]
+      },
+      {
+        name: "Luxor, Egypt",
+        description: "Land of ancient temples and tombs.",
+        imageUrl: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT9j8Ous89e0aA_KI9ggaEEMbivwREfau1LFQ&s",
+        averageCost: 1700,
+        bestTime: "October to April",
+        attractions: "Valley of the Kings, Karnak Temple, Luxor Temple",
+        reviews: "4.9/5 - Deeply historic and awe-inspiring",
+        types: ["history", "adventure"]
+      },
+      {
+        name: "Helsinki, Finland",
+        description: "Nordic cool with design and nature.",
+        imageUrl: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQDieBymUJSxPMOgNUAmEEwjfe4__e3mMhrEw&s",
+        averageCost: 2000,
+        bestTime: "May to September",
+        attractions: "Suomenlinna Fortress, Market Square, Design District",
+        reviews: "4.7/5 - Clean, quiet, and refreshing",
+        types: ["culture", "relaxation", "nature"]
+      },
+      {
+        name: "Kraków, Poland",
+        description: "Polish charm with Gothic grandeur.",
+        imageUrl: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQVWVtxLUz1Tivd7WClvWtQpPGVx31uBgd9RA&s",
+        averageCost: 1300,
+        bestTime: "May to September",
+        attractions: "Wawel Castle, Main Square, Auschwitz Museum",
+        reviews: "4.8/5 - Budget-friendly and cultural",
+        types: ["history", "culture"]
+      },
+      {
+        name: "Seychelles",
+        description: "Island paradise with luxury resorts.",
+        imageUrl: "https://www.gokite.travel/wp-content/uploads/2024/09/Top-10-Seychelles-Tourist-Attractions-Must-Visit-Spots-in-Paradise.webp",
+        averageCost: 2500,
+        bestTime: "April to May, October to November",
+        attractions: "Anse Lazio, La Digue, Vallee de Mai",
+        reviews: "4.9/5 - Pristine and romantic",
+        types: ["beach", "relaxation", "romantic"]
+      },
+      {
+        name: "Doha, Qatar",
+        description: "Modern marvel in the desert.",
+        imageUrl: "https://img.traveltriangle.com/blog/wp-content/uploads/2024/02/cover-image6.jpg",
+        averageCost: 2000,
+        bestTime: "November to April",
+        attractions: "Museum of Islamic Art, Souq Waqif, The Pearl",
+        reviews: "4.7/5 - Futuristic and luxurious",
+        types: ["culture", "modern", "relaxation"]
+      },
+      {
+        name: "Auckland, New Zealand",
+        description: "Urban hub surrounded by nature.",
+        imageUrl: "https://assets.traveltriangle.com/blog/wp-content/uploads/2015/09/Auckland.jpg",
+        averageCost: 2200,
+        bestTime: "December to March",
+        attractions: "Sky Tower, Waiheke Island, Piha Beach",
+        reviews: "4.8/5 - Clean, green, and exciting",
+        types: ["nature", "relaxation", "adventure"]
+      },
+      {
+        name: "Phuket, Thailand",
+        description: "Tropical beaches and nightlife.",
+        imageUrl: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSDy9qmf4dcGkyUaYg6MMoYGI508Tnn3wqV2g&s",
+        averageCost: 1000,
+        bestTime: "November to April",
+        attractions: "Patong Beach, Big Buddha, Phi Phi Islands",
+        reviews: "4.7/5 - Vibrant and sunny",
+        types: ["beach", "adventure", "relaxation"]
+      },
+      {
+        name: "Panama City, Panama",
+        description: "Modern skyline and canal wonders.",
+        imageUrl: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSnYBVy0cdXOy-zAJ9w-sOYRCWBtpUoE0-rmw&s",
+        averageCost: 1600,
+        bestTime: "December to April",
+        attractions: "Panama Canal, Casco Viejo, Metropolitan Park",
+        reviews: "4.6/5 - Diverse and up-and-coming",
+        types: ["culture", "modern", "nature"]
+      },
+      {
+        name: "Manila, Philippines",
+        description: "Colonial past and vibrant life.",
+        imageUrl: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTT4YVKOXYYsMI8ZS3gQVU0wGdtwFcdWT5qhQ&s",
+        averageCost: 1200,
+        bestTime: "December to May",
+        attractions: "Intramuros, Rizal Park, Manila Ocean Park",
+        reviews: "4.5/5 - Chaotic and colorful",
+        types: ["history", "culture"]
+      },
+      {
+        name: "Montreal, Canada",
+        description: "French flair in North America.",
+        imageUrl: "https://travel.destinationcanada.com/_next/image?url=https%3A%2F%2Fadmin.destinationcanada.com%2Fsites%2Fdefault%2Ffiles%2F2023-06%2FQC-Montreal-Skyline_hero.jpg&w=1920&q=75",
+        averageCost: 1700,
+        bestTime: "May to October",
+        attractions: "Old Montreal, Mount Royal, Notre-Dame Basilica",
+        reviews: "4.8/5 - Chic and multicultural",
+        types: ["culture", "romantic", "history"]
+      },
+      {
+        name: "Mexico City, Mexico",
+        description: "Aztec roots and spicy cuisine.",
+        imageUrl: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTVsawnLfWomK0Jfp465PWOtUpAjqvmLMedLA&s",
+        averageCost: 1400,
+        bestTime: "March to May",
+        attractions: "Zócalo, Frida Kahlo Museum, Teotihuacan",
+        reviews: "4.7/5 - Artistic and flavorful",
+        types: ["culture", "history"]
+      },
+      {
+        name: "La Paz, Bolivia",
+        description: "High-altitude city with surreal landscapes.",
+        imageUrl: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT0l5cGVCpJgnVe1xjSuzdNibbrN3p2csRJwA&s",
+        averageCost: 1300,
+        bestTime: "May to October",
+        attractions: "Valley of the Moon, Cable Car, Witches’ Market",
+        reviews: "4.6/5 - Unique and exhilarating",
+        types: ["adventure", "culture"]
+      },
+      {
+        name: "Lima, Peru",
+        description: "Coastal capital with great food.",
+        imageUrl: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRqJzH9XfWNVwGBmnN_1XIszCvXbxZ_EYizJw&s",
+        averageCost: 1600,
+        bestTime: "December to April",
+        attractions: "Miraflores, Huaca Pucllana, Barranco",
+        reviews: "4.7/5 - Gastronomic and oceanic",
+        types: ["culture", "beach", "relaxation"]
+      },
+      {
+        name: "Tbilisi, Georgia",
+        description: "Mountain culture and colorful streets.",
+        imageUrl: "https://www.gokitetours.com/wp-content/uploads/2024/06/The-Most-Famous-Historical-Places-to-Visit-in-Georgia-.webp",
+        averageCost: 1200,
+        bestTime: "May to October",
+        attractions: "Narikala Fortress, Old Town, Sulfur Baths",
+        reviews: "4.8/5 - Underrated and rich in heritage",
+        types: ["history", "culture", "relaxation"]
+      },
+      {
+        name: "Colombo, Sri Lanka",
+        description: "Tropical charm and colonial heritage.",
+        imageUrl: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTAtovGo5nO5IqH3gPuVGdLA6RUGVkbEEcNrA&s",
+        averageCost: 1100,
+        bestTime: "December to March",
+        attractions: "Galle Face Green, Gangaramaya Temple, Pettah Market",
+        reviews: "4.6/5 - Peaceful and cultural",
+        types: ["culture", "beach", "history"]
+      },
+      {
+        name: "Bali, Indonesia",
+        description: "Temples and beaches.",
+        imageUrl: "https://picsum.photos/id/1018/600/300",
+        averageCost: 1200,
+        bestTime: "April to October",
+        attractions: "Ubud, Tanah Lot, Seminyak Beach",
+        reviews: "4.8/5 - Stunning beaches and serene vibes",
+        types: ["relaxation", "culture", "adventure", "beach"]
+      },
+      {
+        name: "Rome, Italy",
+        description: "History and Italian cuisine.",
+        imageUrl: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSLGc4qdYXrq-S_ppz6DA4zjiz_4xah5sumqg&s",
+        averageCost: 1500,
+        bestTime: "April to June",
+        attractions: "Colosseum, Vatican City, Trevi Fountain",
+        reviews: "4.7/5 - Rich history and amazing food",
+        types: ["culture", "history"]
+      },
+      {
+        name: "Paris, France",
+        description: "Romantic and artistic capital.",
+        imageUrl: "https://www.planetware.com/photos-large/F/france-paris-eiffel-tower.jpg",
+        averageCost: 1800,
+        bestTime: "April to October",
+        attractions: "Eiffel Tower, Louvre Museum, Montmartre",
+        reviews: "4.9/5 - Romantic and culturally rich",
+        types: ["culture", "romantic"]
+      },
+      {
+        name: "Kyoto, Japan",
+        description: "Historic temples and cherry blossoms.",
+        imageUrl: "https://lp-cms-production.imgix.net/2022-03/Japan%20Kyoto%20Avigator%20Fortuner%20shutterstock_763950445%20RFC.jpg",
+        averageCost: 1600,
+        bestTime: "March to May, October to November",
+        attractions: "Fushimi Inari Shrine, Arashiyama Bamboo Grove",
+        reviews: "4.8/5 - Peaceful and deeply cultural",
+        types: ["culture", "history", "nature"]
+      },
+      {
+        name: "Santorini, Greece",
+        description: "Cliffside views and white-washed houses.",
+        imageUrl: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTz3_vapYZ_ifjnCWjYtloDJe9fXpZ1civySQ&s",
+        averageCost: 1700,
+        bestTime: "April to November",
+        attractions: "Oia, Fira, Red Beach",
+        reviews: "4.9/5 - Stunning sunsets and scenery",
+        types: ["romantic", "beach", "relaxation"]
+      },
+      {
+        name: "Banff, Canada",
+        description: "Snow-capped mountains and turquoise lakes.",
+        imageUrl: "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/0f/c9/73/47/photo3jpg.jpg?w=500&h=-1&s=1",
+        averageCost: 1900,
+        bestTime: "June to August, December to March",
+        attractions: "Lake Louise, Banff National Park",
+        reviews: "4.8/5 - Breathtaking natural beauty",
+        types: ["snow", "nature", "adventure"]
+      },
+      {
+        name: "Barcelona, Spain",
+        description: "Art, architecture, and beaches.",
+        imageUrl: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRIoSHwXwNVmpUK3oyMNaiEx_RK083F19qrtQ&s",
+        averageCost: 1600,
+        bestTime: "May to June, September to October",
+        attractions: "Sagrada Familia, Park Güell, Barceloneta",
+        reviews: "4.7/5 - Vibrant culture and beautiful streets",
+        types: ["culture", "history", "beach"]
+      },
+      {
+        name: "Reykjavik, Iceland",
+        description: "Northern lights and volcanic landscapes.",
+        imageUrl: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT_eI_lYCOE_R_dGhHe0iHRTzq7Wa11mD9YeQ&s",
+        averageCost: 2200,
+        bestTime: "February to March, September to October",
+        attractions: "Blue Lagoon, Golden Circle, Northern Lights",
+        reviews: "4.9/5 - Majestic and unforgettable",
+        types: ["snow", "nature", "adventure"]
+      },
+      {
+        name: "Dubai, UAE",
+        description: "Modern skyscrapers and desert adventures.",
+        imageUrl: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRwS5zT3fXML1d5URknx7A5s9WNgH82KuiuJA&s",
+        averageCost: 2000,
+        bestTime: "November to March",
+        attractions: "Burj Khalifa, Desert Safari, Palm Jumeirah",
+        reviews: "4.8/5 - Luxurious and futuristic",
+        types: ["adventure", "relaxation", "culture"]
+      },
+      {
+        name: "New York City, USA",
+        description: "Skyscrapers and world-class entertainment.",
+        imageUrl: "https://www.planetware.com/photos-large/USNY/new-york-city-statue-of-liberty.jpg",
+        averageCost: 2500,
+        bestTime: "April to June, September to November",
+        attractions: "Times Square, Central Park, Broadway",
+        reviews: "4.9/5 - Energy and excitement everywhere",
+        types: ["culture", "history"]
+      },
+      {
+        name: "Taj Mahal, Agra, India",
+        description: "Monument of love and Mughal architecture.",
+        imageUrl: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTQ9pzjAo-ucx9Et-zQ55X4ruGiGnhFL10Fwg&s",
+        averageCost: 300,
+        bestTime: "October to March",
+        attractions: "Taj Mahal, Agra Fort, Mehtab Bagh",
+        reviews: "4.9/5 - Timeless and magnificent",
+        types: ["history", "culture", "romantic"]
+      },
+      {
+        name: "Goa, India",
+        description: "Beach paradise of India.",
+        imageUrl: "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/15/33/fc/f0/goa.jpg?w=1200&h=700&s=1",
+        averageCost: 500,
+        bestTime: "November to February",
+        attractions: "Baga Beach, Fort Aguada, Anjuna Market",
+        reviews: "4.7/5 - Fun, sun, and sand",
+        types: ["beach", "adventure", "relaxation"]
+      },
+      {
+        name: "Leh-Ladakh, India",
+        description: "Mountain desert adventure.",
+        imageUrl: "https://hblimg.mmtcdn.com/content/hubble/img/ladakh/mmt/activities/t_ufs/m_activities_ladakh_pangong_tso_l_411_617.jpg",
+        averageCost: 800,
+        bestTime: "May to September",
+        attractions: "Pangong Lake, Nubra Valley, Khardung La",
+        reviews: "4.9/5 - Rugged and spectacular",
+        types: ["adventure", "snow", "nature"]
+      },
+      {
+        name: "Munnar, Kerala, India",
+        description: "Tea gardens and cool weather.",
+        imageUrl: "https://dreamlandmunnar.in/wp-content/uploads/2023/11/5-1024x620.webp",
+        averageCost: 600,
+        bestTime: "September to March",
+        attractions: "Tea plantations, Eravikulam National Park",
+        reviews: "4.8/5 - Calm and green",
+        types: ["nature", "relaxation"]
+      },
+      {
+        name: "Jaipur, India",
+        description: "Pink city with palaces and culture.",
+        imageUrl: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSF5RfR3fm4BfCpqA4xyCxy2IhEBGR1XnV-Jw&s",
+        averageCost: 400,
+        bestTime: "October to March",
+        attractions: "Amber Fort, Hawa Mahal, City Palace",
+        reviews: "4.8/5 - Royal charm and rich history",
+        types: ["culture", "history"]
+      },
+      {
+        name: "Queenstown, New Zealand",
+        description: "Adventure capital with scenic landscapes.",
+        imageUrl: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRE8Z5oG3CiaMO6sxxD8gLeVroYlyazvsBgFQ&s",
+        averageCost: 2200,
+        bestTime: "December to February",
+        attractions: "Lake Wakatipu, Skyline Gondola, Milford Sound",
+        reviews: "4.9/5 - Thrilling and breathtaking",
+        types: ["adventure", "nature"]
+      },
+      {
+        name: "Cape Town, South Africa",
+        description: "Mountains, beaches, and vineyards.",
+        imageUrl: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSkLgoZN7KvwGBr1ONJ5JFIR6bCCQWi0YeXvA&s",
+        averageCost: 1800,
+        bestTime: "March to May, September to November",
+        attractions: "Table Mountain, Robben Island, Cape Winelands",
+        reviews: "4.8/5 - Beautiful and vibrant",
+        types: ["nature", "culture", "relaxation"]
+      },
+      {
+        name: "Istanbul, Turkey",
+        description: "Where East meets West.",
+        imageUrl: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRiXKiT1xleqJy6KRIy5BjwSAh3viaoimh03A&s",
+        averageCost: 1500,
+        bestTime: "April to May, September to November",
+        attractions: "Hagia Sophia, Blue Mosque, Grand Bazaar",
+        reviews: "4.7/5 - Rich history and unique culture",
+        types: ["culture", "history"]
+      },
+      {
+        name: "Petra, Jordan",
+        description: "Ancient city carved into rose-red rock.",
+        imageUrl: "https://cdn.kimkim.com/files/a/content_articles/featured_photos/3139f160593f5df5287ef0b599873b83a563a8c2/big-d31dd33032d7c38fe0e3f5b253f23ff2.jpg",
+        averageCost: 1600,
+        bestTime: "March to May, September to November",
+        attractions: "The Treasury, Monastery, Siq",
+        reviews: "4.9/5 - Mysterious and awe-inspiring",
+        types: ["history", "adventure"]
+      },
+      {
+        name: "Cusco & Machu Picchu, Peru",
+        description: "Lost Incan city in the Andes.",
+        imageUrl: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQvl5ZM1sxVWf2kunp9dzLG4oX1Vz9LUU2fhA&s",
+        averageCost: 2000,
+        bestTime: "May to September",
+        attractions: "Machu Picchu, Sacred Valley, Sacsayhuamán",
+        reviews: "4.9/5 - Majestic and unforgettable",
+        types: ["history", "adventure", "nature"]
+      },
+      {
+        name: "Edinburgh, Scotland",
+        description: "Gothic architecture and rolling hills.",
+        imageUrl: "https://media1.thrillophilia.com/filestore/kof9z9355ftop1ew554cy2294u1q_1618904753_shutterstock_532790395.jpg?w=753&h=450&dpr=2.0",
+        averageCost: 1700,
+        bestTime: "June to August",
+        attractions: "Edinburgh Castle, Royal Mile, Arthur's Seat",
+        reviews: "4.7/5 - Majestic and charming",
+        types: ["history", "culture"]
+      },
+      {
+        name: "Hoi An, Vietnam",
+        description: "Lantern-lit streets and heritage.",
+        imageUrl: "https://media2.thrillophilia.com/images/photos/000/180/224/original/1611060529_shutterstock_1155069949.jpg?gravity=center&width=1280&height=642&crop=fill&quality=auto&fetch_format=auto&flags=strip_profile&format=jpg&sign_url=true",
+        averageCost: 1000,
+        bestTime: "February to April",
+        attractions: "Ancient Town, Japanese Bridge, An Bang Beach",
+        reviews: "4.8/5 - Quaint and historic",
+        types: ["culture", "history", "relaxation"]
+      },
+      {
+        name: "Prague, Czech Republic",
+        description: "Storybook architecture and historic charm.",
+        imageUrl: "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/0e/3b/6f/9e/caption.jpg?w=500&h=-1&s=1",
+        averageCost: 1400,
+        bestTime: "May to September",
+        attractions: "Charles Bridge, Prague Castle, Old Town Square",
+        reviews: "4.8/5 - Romantic and magical",
+        types: ["culture", "history"]
+      },
+      {
+        name: "Buenos Aires, Argentina",
+        description: "Tango, steak, and grand boulevards.",
+        imageUrl: "https://d15ldvyocwqu5y.cloudfront.net/images/uploaded-new/277371",
+        averageCost: 1900,
+        bestTime: "April to June, September to December",
+        attractions: "La Boca, Recoleta Cemetery, Teatro Colón",
+        reviews: "4.7/5 - Passionate and lively",
+        types: ["culture", "romantic"]
+      },
+      {
+        name: "Zermatt, Switzerland",
+        description: "Alpine village near the Matterhorn.",
+        imageUrl: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTAesMCLu8aD7M5tmzn2hxuiAL3OPZkzqSLCA&s",
+        averageCost: 2400,
+        bestTime: "December to March, June to September",
+        attractions: "Matterhorn, Gornergrat Railway, Glacier Paradise",
+        reviews: "4.9/5 - Spectacular and peaceful",
+        types: ["snow", "nature", "adventure"]
+      },
+      {
+        name: "Puducherry, India",
+        description: "A serene blend of French charm and Indian culture.",
+        imageUrl: "https://www.goldentriangletour.com/userfiles/1280px-Puducherry_Harbor.jpg",
+        averageCost: 900,
+        bestTime: "October to March",
+        attractions: "Promenade Beach, Auroville, French Quarters",
+        reviews: "4.8/5 - Peaceful seaside and colonial vibes",
+        types: ["relaxation", "culture", "beach"]
+      },
+      {
+        name: "Udaipur, Rajasthan",
+        description: "Romantic city of lakes and palaces.",
+        imageUrl: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcROaWtRE2_6-tf1gKy-j4kBxoMyH189_kBskg&s",
+        averageCost: 1000,
+        bestTime: "October to March",
+        attractions: "City Palace, Lake Pichola, Jag Mandir",
+        reviews: "4.8/5 - Regal and tranquil",
+        types: ["romantic", "culture", "history"]
+      },
+      {
+        name: "Rishikesh, Uttarakhand",
+        description: "Yoga capital and river adventure hub.",
+        imageUrl: "https://www.captureatrip.com/_next/image?url=https%3A%2F%2Fcaptureatrip-cms-storage.s3.ap-south-1.amazonaws.com%2FRishikesh_3c33f1475f.webp&w=3840&q=50&dpl=dpl_8pE7NX6dCFdTGq2AGBxoVpC4JTBb",
+        averageCost: 900,
+        bestTime: "March to May, September to November",
+        attractions: "Laxman Jhula, River Rafting, Ashrams",
+        reviews: "4.7/5 - Spiritual and adrenaline-filled",
+        types: ["spiritual", "adventure", "nature"]
+      },
+      {
+        name: "Mahabalipuram, Tamil Nadu",
+        description: "Coastal town with ancient rock-cut temples.",
+        imageUrl: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRz3wPnCv-Ao5yqh6e4Ip7jmN1q72JyQtcZaw&s",
+        averageCost: 800,
+        bestTime: "November to February",
+        attractions: "Shore Temple, Pancha Rathas, Arjuna’s Penance",
+        reviews: "4.6/5 - Historic and peaceful",
+        types: ["history", "beach", "culture"]
+      },
+      {
+        name: "Spiti Valley, Himachal Pradesh",
+        description: "Remote Himalayan beauty with Buddhist charm.",
+        imageUrl: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTMlvqdBSu2q2nGnfiA-mDvULnZ3XzMkGwwDw&s",
+        averageCost: 1300,
+        bestTime: "June to October",
+        attractions: "Key Monastery, Chandratal Lake, Kaza",
+        reviews: "4.9/5 - Isolated and magical",
+        types: ["adventure", "nature", "spiritual"]
+      },
+      {
+        name: "Orchha, Madhya Pradesh",
+        description: "Hidden town with grand forts and temples.",
+        imageUrl: "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/16/1d/24/96/the-marvellous-orchha.jpg?w=500&h=-1&s=1",
+        averageCost: 850,
+        bestTime: "October to March",
+        attractions: "Orchha Fort, Chaturbhuj Temple, Betwa River",
+        reviews: "4.5/5 - Underrated heritage destination",
+        types: ["history", "culture", "relaxation"]
+      },
+      {
+        name: "Auroville, Tamil Nadu",
+        description: "Experimental township promoting human unity.",
+        imageUrl: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTCnJ2y8E1bNp6CWw-v3VUvGFAhCUszHR2sgA&s",
+        averageCost: 950,
+        bestTime: "December to March",
+        attractions: "Matrimandir, Auro Beach, Serenity",
+        reviews: "4.7/5 - Peaceful, eco-conscious, and unique",
+        types: ["spiritual", "relaxation", "culture"]
+      },
+      {
+        name: "Khajuraho, Madhya Pradesh",
+        description: "Famous for erotic sculptures and temples.",
+        imageUrl: "https://media2.thrillophilia.com/images/photos/000/140/452/original/1545812726_1532086957_Kandariya_Temple.jpg.png?width=975&height=600",
+        averageCost: 1000,
+        bestTime: "October to February",
+        attractions: "Kandariya Mahadev Temple, Light & Sound Show",
+        reviews: "4.6/5 - Intriguing and architectural masterpiece",
+        types: ["history", "culture", "spiritual"]
+      },
+      {
+        name: "Sundarbans, West Bengal",
+        description: "Largest mangrove forest and home to Royal Bengal Tigers.",
+        imageUrl: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ8EB1XmMZbu8PwXlHWhQwjcRNuUg5lL4RbmQ&s",
+        averageCost: 1100,
+        bestTime: "November to February",
+        attractions: "Tiger Safaris, Boat Rides, Mangrove Trails",
+        reviews: "4.7/5 - Wild, mysterious, and raw",
+        types: ["nature", "adventure", "wildlife"]
+      },
+      {
+        name: "Ziro Valley, Arunachal Pradesh",
+        description: "Lush valley with tribal culture and music.",
+        imageUrl: "https://plutotours.in/places/wp-content/uploads/2023/12/Puto-Ziro.webp",
+        averageCost: 1200,
+        bestTime: "March to October",
+        attractions: "Ziro Music Festival, Pine Hills, Apatani Villages",
+        reviews: "4.8/5 - Green, musical, and cultural",
+        types: ["nature", "culture", "adventure"]
+      }
+    ];
+
+    function showLogin() {
+      document.getElementById('signupPage').classList.add('hidden');
+      document.getElementById('loginPage').classList.remove('hidden');
+    }
+
+    function showSignup() {
+      document.getElementById('loginPage').classList.add('hidden');
+      document.getElementById('signupPage').classList.remove('hidden');
+    }
+
+    function isStrongPassword(pw) {
+      return pw.length >= 6 && /[A-Z]/.test(pw) && /\d/.test(pw);
+    }
+
+    function isValidEmail(email) {
+      const regex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+      return regex.test(email);
+    }
+
+    function signup() {
+      const username = document.getElementById('signupUsername').value;
+      const email = document.getElementById('signupEmail').value;
+      const mobile = document.getElementById('signupMobile').value;
+      const password = document.getElementById('signupPassword').value;
+
+      if (!isStrongPassword(password)) {
+        alert("Password must be at least 6 characters, contain one uppercase letter and one number.");
+        return;
+      }
+
+      if(!isValidEmail(email)){
+        alert("Invalid email")
+        return
+      }
+
+      const users = JSON.parse(localStorage.getItem("users") || "{}");
+      if (users[email]) {
+        alert("User already exists.");
+      } else {
+        users[email] = { username, email, mobile, password };
+        localStorage.setItem("users", JSON.stringify(users));
+        alert("Account created!");
+        showLogin();
+      }
+    }
+
+    function login() {
+      const email = document.getElementById('loginEmail').value;
+      const mobile = document.getElementById('loginMobile').value;
+      const password = document.getElementById('loginPassword').value;
+
+      const users = JSON.parse(localStorage.getItem("users") || "{}");
+      const user = users[email];
+
+      if (user && user.mobile === mobile && user.password === password) {
+        localStorage.setItem("loggedInUser", email);
+        document.getElementById('loginPage').classList.add('hidden');
+        showMainApp();
+      } else {
+        alert("Invalid email, mobile, or password.");
+      }
+    }
+
+    function logout() {
+      localStorage.removeItem("loggedInUser");
+      document.getElementById('mainApp').classList.add('hidden');
+      document.getElementById('loginPage').classList.remove('hidden');
+    }
+
+    function showMainApp() {
+      document.getElementById('signupPage').classList.add('hidden');
+      document.getElementById('loginPage').classList.add('hidden');
+      document.getElementById('mainApp').classList.remove('hidden');
+    }
+
+    function getRecommendations() {
+      const selected = Array.from(document.querySelectorAll('.preferences input[type="checkbox"]:checked')).map(cb => cb.value);
+      const results = destinations.filter(d => d.types.some(t => selected.includes(t)));
+      const container = document.getElementById('destinations');
+      container.innerHTML = '';
+      document.getElementById('detailView').classList.add('hidden');
+      container.classList.remove('hidden');
+
+      if (results.length === 0) {
+        container.innerHTML = '<p>No matching destinations found.</p>';
+        return;
+      }
+
+      results.forEach(dest => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.onclick = () => showDetail(dest);
+        card.innerHTML = `
+          <img src="${dest.imageUrl}" alt="${dest.name}" />
+          <div class="card-content">
+            <h3>${dest.name}</h3>
+            <p>${dest.description}</p>
+            <p><strong>Cost:</strong> $${dest.averageCost}</p>
+          </div>`;
+        container.appendChild(card);
+      });
+    }
+
+    function showDetail(dest) {
+      document.getElementById('mainApp').querySelectorAll('div, h1').forEach(el => {
+        if (el.id !== 'detailView') el.classList.add('hidden');
+      });
+
+      document.getElementById('detailName').innerText = dest.name;
+      document.getElementById('detailImg').src = dest.imageUrl;
+      document.getElementById('detailDesc').innerText = dest.description;
+      document.getElementById('detailCost').innerText = dest.averageCost;
+      document.getElementById('detailTime').innerText = dest.bestTime;
+      document.getElementById('detailAttractions').innerText = dest.attractions;
+      document.getElementById('detailReviews').innerText = dest.reviews;
+
+      document.getElementById('detailView').classList.remove('hidden');
+    }
+
+    function backToList() {
+      document.getElementById('detailView').classList.add('hidden');
+      document.getElementById('mainApp').querySelectorAll('div, h1').forEach(el => el.classList.remove('hidden'));
+      document.getElementById('detailView').classList.add('hidden');
+    }
+
+    window.onload = () => {
+      if (localStorage.getItem("loggedInUser")) showMainApp();
+    };
+  </script>
+
+</body>
+</html>
