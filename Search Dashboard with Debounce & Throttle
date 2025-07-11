@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Search Dashboard</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      margin: 40px auto;
+      max-width: 600px;
+    }
+    input[type="text"] {
+      width: 80%;
+      padding: 10px;
+      font-size: 18px;
+    }
+    #results {
+      margin-top: 20px;
+      text-align: left;
+    }
+    .highlight {
+      background-color: yellow;
+      font-weight: bold;
+    }
+    #backToTop {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: #007BFF;
+      color: white;
+      padding: 10px 15px;
+      border: none;
+      border-radius: 5px;
+      display: none;
+      cursor: pointer;
+    }
+    #stats {
+      margin-top: 20px;
+      font-size: 16px;
+    }
+    #loader {
+      font-style: italic;
+      color: gray;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>🔍 Search Dashboard</h1>
+  <input type="text" id="searchBox" placeholder="Type a name..." />
+  <div id="loader"></div>
+  <div id="results"></div>
+
+  <div id="stats">
+    <p>🖊️ Keystrokes: <span id="keystrokes">0</span></p>
+    <p>🔁 Debounced Searches: <span id="debouncedCount">0</span></p>
+  </div>
+
+  <button id="backToTop">⬆️ Back to Top</button>
+
+  <script>
+    // Generate 200+ names
+    const names = [];
+    const firstNames = ["Alice", "Bob", "Charlie", "David", "Eva", "Frank", "Grace", "Helen", "Ian", "Jane"];
+    const lastNames = ["Smith", "Johnson", "Brown", "Taylor", "Anderson", "Lee", "White", "Martin", "Clark", "Walker"];
+    for (let i = 0; i < 250; i++) {
+      const first = firstNames[Math.floor(Math.random() * firstNames.length)];
+      const last = lastNames[Math.floor(Math.random() * lastNames.length)];
+      names.push(`${first} ${last}`);
+    }
+
+    const searchBox = document.getElementById("searchBox");
+    const resultsDiv = document.getElementById("results");
+    const backToTopBtn = document.getElementById("backToTop");
+    const keystrokesSpan = document.getElementById("keystrokes");
+    const debouncedCountSpan = document.getElementById("debouncedCount");
+    const loaderDiv = document.getElementById("loader");
+
+    let keystrokeCount = 0;
+    let debouncedSearchCount = 0;
+    let debounceTimeout;
+
+    // Debounce function
+    function debounce(func, delay) {
+      return function(...args) {
+        clearTimeout(debounceTimeout);
+        loaderDiv.innerText = "Searching...";
+        debounceTimeout = setTimeout(() => {
+          loaderDiv.innerText = "";
+          func(...args);
+        }, delay);
+      };
+    }
+
+    // Throttle function
+    function throttle(func, limit) {
+      let inThrottle;
+      return function(...args) {
+        if (!inThrottle) {
+          func(...args);
+          inThrottle = true;
+          setTimeout(() => inThrottle = false, limit);
+        }
+      };
+    }
+
+    // Highlight match
+    function highlight(text, term) {
+      const regex = new RegExp(`(${term})`, "gi");
+      return text.replace(regex, `<span class="highlight">$1</span>`);
+    }
+
+    // Search logic
+    function performSearch(term) {
+      debouncedSearchCount++;
+      debouncedCountSpan.innerText = debouncedSearchCount;
+
+      const filtered = names.filter(name =>
+        name.toLowerCase().includes(term.toLowerCase())
+      );
+
+      if (term.trim() === "") {
+        resultsDiv.innerHTML = "";
+        return;
+      }
+
+      if (filtered.length === 0) {
+        resultsDiv.innerHTML = "<p>No results found.</p>";
+        return;
+      }
+
+      resultsDiv.innerHTML = filtered
+        .map(name => `<p>${highlight(name, term)}</p>`)
+        .join("");
+    }
+
+    const debouncedSearch = debounce(performSearch, 1000);
+
+    searchBox.addEventListener("input", (e) => {
+      keystrokeCount++;
+      keystrokesSpan.innerText = keystrokeCount;
+      debouncedSearch(e.target.value);
+    });
+
+    // Back to Top scroll logic
+    window.addEventListener("scroll", throttle(() => {
+      if (window.scrollY > 200) {
+        backToTopBtn.style.display = "block";
+      } else {
+        backToTopBtn.style.display = "none";
+      }
+    }, 500));
+
+    backToTopBtn.addEventListener("click", () => {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    });
+  </script>
+</body>
+</html>
